@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Thayer Toyota — Sales Board</title>
+<style>
+  :root{
+    --toyota-red:#EB0A1E;
+    --toyota-red-dark:#B0081A;
+    --ink:#1a1a1a;
+    --line:#c9ccd1;
+    --line-soft:#e3e5e8;
+    --header-dark:#232323;
+    --paper:#ffffff;
+    --muted:#6b7280;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: Arial, Helvetica, sans-serif;
+    background:#eef0f2;
+    color:var(--ink);
+    padding:24px;
+  }
+  .sheet-wrap{
+    max-width:100%;
+    overflow-x:auto;
+    background:var(--paper);
+    border:1px solid var(--line);
+    box-shadow:0 1px 3px rgba(0,0,0,0.08);
+  }
+  .titlebar{
+    background:linear-gradient(180deg,var(--toyota-red),var(--toyota-red-dark));
+    color:#fff;
+    padding:14px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .titlebar h1{
+    margin:0;
+    font-size:19px;
+    letter-spacing:0.5px;
+    font-weight:700;
+  }
+  .titlebar .sub{
+    font-size:11px;
+    opacity:0.85;
+    margin-top:2px;
+  }
+  .month-select-wrap{
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .month-select-wrap label{
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    opacity:0.9;
+  }
+  select.month-select{
+    font-family:inherit;
+    font-size:13px;
+    font-weight:700;
+    padding:6px 10px;
+    border-radius:6px;
+    border:1px solid rgba(255,255,255,0.45);
+    background:rgba(255,255,255,0.15);
+    color:#fff;
+    cursor:pointer;
+  }
+  select.month-select option{ color:#000; }
+  .totals{
+    display:flex;
+    gap:10px;
+  }
+  .total-box{
+    background:rgba(255,255,255,0.15);
+    border:1px solid rgba(255,255,255,0.45);
+    border-radius:6px;
+    padding:6px 18px;
+    text-align:center;
+    min-width:76px;
+  }
+  .total-label{
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.6px;
+    opacity:0.9;
+  }
+  .total-num{
+    font-size:24px;
+    font-weight:800;
+    line-height:1.15;
+    font-variant-numeric:tabular-nums;
+  }
+  .toolbar{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:10px 20px;
+    background:#f7f7f8;
+    border-bottom:1px solid var(--line);
+    flex-wrap:wrap;
+  }
+  .toolbar .group{
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .toolbar label{
+    font-size:11px;
+    color:var(--muted);
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    margin-right:4px;
+  }
+  .swatch{
+    width:22px;height:22px;
+    border-radius:4px;
+    border:2px solid rgba(0,0,0,0.15);
+    cursor:pointer;
+    padding:0;
+  }
+  .swatch.selected{
+    outline:2px solid var(--toyota-red-dark);
+    outline-offset:2px;
+  }
+  .swatch.none{
+    background:
+      linear-gradient(45deg, transparent 45%, #d33 45%, #d33 55%, transparent 55%),
+      #fff;
+  }
+  button.btn{
+    font-family:inherit;
+    font-size:12px;
+    font-weight:700;
+    padding:7px 12px;
+    border-radius:4px;
+    border:1px solid var(--line);
+    background:#fff;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  button.btn:hover{ background:#f0f0f0; }
+  button.btn.primary{
+    background:var(--toyota-red);
+    border-color:var(--toyota-red-dark);
+    color:#fff;
+  }
+  button.btn.primary:hover{ background:var(--toyota-red-dark); }
+  button.btn.danger{
+    background:#FF0000;
+    border-color:#b30000;
+    color:#fff;
+  }
+  button.btn.danger:hover{ background:#cc0000; }
+  body.is-locked #clearAllBtn{
+    opacity:0.45;
+    cursor:not-allowed;
+  }
+  .modal-box.danger-box h2{ color:#b30000; }
+  .modal-box .modal-warning{
+    font-size:12px;
+    color:#b30000;
+    font-weight:700;
+    margin:0 0 10px;
+  }
+  .hint{
+    font-size:11px;
+    color:var(--muted);
+    padding:8px 20px 14px;
+    line-height:1.5;
+    border-bottom:1px solid var(--line);
+    background:#fbfbfc;
+  }
+  table{
+    border-collapse:collapse;
+    width:100%;
+    font-size:12.5px;
+  }
+  th,td{
+    border:1px solid var(--line-soft);
+    padding:0;
+  }
+  thead th{
+    background:var(--header-dark);
+    color:#fff;
+    font-size:12px;
+    font-weight:700;
+    text-align:center;
+    padding:8px 4px;
+    position:sticky;
+    top:0;
+    z-index:2;
+  }
+  thead th.name-hdr{
+    text-align:left;
+    padding-left:12px;
+    background:var(--toyota-red-dark);
+    min-width:150px;
+    left:0;
+    z-index:3;
+  }
+  td.name-cell{
+    font-weight:700;
+    padding:8px 10px 8px 26px;
+    vertical-align:middle;
+    background:#fafafa;
+    min-width:150px;
+    position:sticky;
+    left:0;
+    border-right:2px solid var(--line);
+  }
+  input.select-person{
+    position:absolute;
+    top:6px;
+    left:6px;
+    width:14px;
+    height:14px;
+    margin:0;
+    cursor:pointer;
+  }
+  body.is-locked input.select-person{
+    opacity:0.45;
+    cursor:not-allowed;
+  }
+  span.name-text{
+    display:block;
+    outline:none;
+  }
+  span.name-text[contenteditable="true"]:empty:before{
+    content:"Salesperson name";
+    color:#b5b8bd;
+    font-weight:400;
+    font-style:italic;
+  }
+  td.row-label{
+    background:#f1f2f4;
+    color:var(--muted);
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+    text-align:center;
+    letter-spacing:0.4px;
+    padding:4px 2px;
+    min-width:44px;
+    position:sticky;
+    left:150px;
+    border-right:1px solid var(--line);
+  }
+  td.data{
+    text-align:center;
+    padding:5px 4px;
+    min-width:64px;
+    cursor:pointer;
+  }
+  td.data[contenteditable="true"]:empty:before{
+    content:"\00a0";
+  }
+  td.data:hover{
+    outline:1px dashed var(--toyota-red);
+    outline-offset:-1px;
+  }
+  td.data.year-cell{
+    padding:0;
+  }
+  .year-row-inner{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    padding:5px 3px 5px 4px;
+    min-height:19px;
+  }
+  span.year-text{
+    flex:1 1 auto;
+    min-width:0;
+    outline:none;
+  }
+  span.year-text[contenteditable="true"]:empty:before{
+    content:"\00a0";
+  }
+  button.slot-delete{
+    flex:0 0 auto;
+    width:14px;
+    height:14px;
+    line-height:12px;
+    padding:0;
+    margin:0;
+    border:none;
+    border-radius:50%;
+    background:#d0021b;
+    color:#fff;
+    font-size:10px;
+    font-weight:700;
+    font-family:inherit;
+    cursor:pointer;
+  }
+  button.slot-delete:hover{ background:#a00115; }
+  body.is-locked button.slot-delete{
+    opacity:0.35;
+    cursor:not-allowed;
+  }
+  td.notes{
+    text-align:left;
+    vertical-align:top;
+    padding:4px 3px;
+    min-width:64px;
+  }
+  .note-row-inner{
+    display:flex;
+    align-items:flex-start;
+    gap:4px;
+  }
+  input.pending-check{
+    flex:0 0 auto;
+    width:13px;
+    height:13px;
+    margin:1px 0 0;
+    cursor:pointer;
+  }
+  body.is-locked input.pending-check{
+    opacity:0.45;
+    cursor:not-allowed;
+  }
+  span.note-text{
+    flex:1 1 auto;
+    min-width:0;
+    outline:none;
+    color:#4b4b4b;
+    font-style:italic;
+    font-size:10.5px;
+    word-break:break-word;
+    cursor:text;
+  }
+  span.note-text[contenteditable="true"]:empty:before{
+    content:"\00a0";
+  }
+  span.note-text:hover{
+    outline:1px dashed var(--toyota-red);
+    outline-offset:-1px;
+  }
+  td.type-cell{
+    text-align:center;
+    vertical-align:middle;
+    padding:3px 2px;
+    min-width:64px;
+    background:#fbfbfc;
+  }
+  button.type-toggle{
+    font-family:inherit;
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:0.3px;
+    padding:3px 7px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:#f1f2f4;
+    color:var(--muted);
+    cursor:pointer;
+    min-width:50px;
+  }
+  button.type-toggle:hover{ border-color:var(--toyota-red); }
+  button.type-toggle[data-car-type="new"]{
+    background:#d7f3df;
+    border-color:#3fa85a;
+    color:#1f7a38;
+  }
+  button.type-toggle[data-car-type="used"]{
+    background:#e6edfb;
+    border-color:#5c86d6;
+    color:#2f57a8;
+  }
+  body.is-locked button.type-toggle{
+    opacity:0.55;
+    cursor:not-allowed;
+  }
+  tr.block-start td{ border-top:2px solid #999; }
+  .footer-bar{
+    padding:12px 20px 18px;
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+    background:#f7f7f8;
+    border-top:1px solid var(--line);
+  }
+  #lockBtn{
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(20,20,20,0.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:50;
+  }
+  .modal-overlay.hidden{ display:none; }
+  .modal-box{
+    background:#fff;
+    border-radius:8px;
+    padding:22px 24px 20px;
+    width:280px;
+    box-shadow:0 8px 30px rgba(0,0,0,0.3);
+  }
+  .modal-box h2{
+    margin:0 0 4px;
+    font-size:15px;
+    color:var(--ink);
+  }
+  .modal-box p{
+    margin:0 0 12px;
+    font-size:11.5px;
+    color:var(--muted);
+    line-height:1.4;
+  }
+  .modal-box input[type="password"]{
+    width:100%;
+    padding:8px 10px;
+    font-size:14px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    margin-bottom:8px;
+    font-family:inherit;
+    letter-spacing:2px;
+  }
+  .modal-box .modal-actions{
+    display:flex;
+    gap:8px;
+    justify-content:flex-end;
+    margin-top:6px;
+  }
+  .modal-error{
+    color:var(--toyota-red);
+    font-size:11.5px;
+    margin:-4px 0 8px;
+    min-height:14px;
+  }
+  .locked-banner{
+    display:none;
+    align-items:center;
+    gap:8px;
+    font-size:11.5px;
+    color:var(--toyota-red-dark);
+    font-weight:700;
+    padding:8px 20px;
+    background:#fff4f4;
+    border-bottom:1px solid var(--line);
+  }
+  body.is-locked .locked-banner{ display:flex; }
+  body.is-locked td[contenteditable="true"]{ cursor:default; }
+  body.is-locked td.data:hover{ outline:none; }
+  body.is-locked .swatch,
+  body.is-locked #addPersonBtn2,
+  body.is-locked #deletePersonBtn{
+    opacity:0.45;
+    cursor:not-allowed;
+  }
+  td.search-match{
+    box-shadow: inset 0 0 0 2px #2f6fed;
+  }
+  .search-wrap{
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  input.search-input{
+    font-family:inherit;
+    font-size:12px;
+    padding:6px 10px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    width:170px;
+  }
+  .search-count{
+    font-size:11px;
+    color:var(--muted);
+    min-width:74px;
+  }
+  .last-saved{
+    font-size:10.5px;
+    color:var(--muted);
+    font-style:italic;
+  }
+  tr.marked-for-delete td.name-cell,
+  tr.marked-for-delete td.row-label{
+    background:#fbdada !important;
+  }
+  .undo-toast{
+    position:fixed;
+    left:50%;
+    bottom:24px;
+    transform:translateX(-50%);
+    background:#232323;
+    color:#fff;
+    padding:10px 16px;
+    border-radius:8px;
+    font-size:12.5px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    box-shadow:0 6px 24px rgba(0,0,0,0.3);
+    z-index:60;
+  }
+  .undo-toast.hidden{ display:none; }
+  .undo-toast button{
+    font-family:inherit;
+    font-size:12px;
+    font-weight:700;
+    color:#fff;
+    background:var(--toyota-red);
+    border:1px solid var(--toyota-red-dark);
+    border-radius:4px;
+    padding:5px 10px;
+    cursor:pointer;
+  }
+  .undo-toast button:hover{ background:var(--toyota-red-dark); }
+  @media (max-width: 900px){
+    body{ padding:10px; }
+    .titlebar{ padding:10px 12px; gap:8px; }
+    .titlebar h1{ font-size:15px; }
+    .titlebar .sub{ font-size:10px; }
+    .total-box{ padding:5px 10px; min-width:56px; }
+    .total-label{ font-size:9px; }
+    .total-num{ font-size:18px; }
+    table{ font-size:11px; }
+    .toolbar{ padding:8px 10px; gap:8px; }
+    input.search-input{ width:120px; }
+  }
+  @media (max-width: 600px){
+    .toolbar .group{ gap:4px; }
+    button.btn{ font-size:11px; padding:6px 9px; }
+    .month-select-wrap label{ display:none; }
+  }
+  @media print{
+    body{ background:#fff; padding:0; }
+    .toolbar, .hint, .footer-bar{ display:none !important; }
+    .sheet-wrap{ border:none; box-shadow:none; }
+    thead th{ position:static; }
+    td.name-cell, td.row-label{ position:static; }
+  }
+</style>
+</head>
+<body class="is-locked">
+
+<div class="sheet-wrap">
+  <div class="titlebar">
+    <div>
+      <h1>THAYER TOYOTA — SALES BOARD</h1>
+      <div class="sub">Salesperson sales tracker</div>
+    </div>
+    <div class="month-select-wrap">
+      <label for="monthSelect">Month</label>
+      <select id="monthSelect" class="month-select">
+        <option value="January">January</option>
+        <option value="February">February</option>
+        <option value="March">March</option>
+        <option value="April">April</option>
+        <option value="May">May</option>
+        <option value="June">June</option>
+        <option value="July" selected="selected">July</option>
+        <option value="August">August</option>
+        <option value="September">September</option>
+        <option value="October">October</option>
+        <option value="November">November</option>
+        <option value="December">December</option>
+      </select>
+    </div>
+    <div class="totals">
+      <div class="total-box">
+        <div class="total-label">Sold</div>
+        <div class="total-num" id="soldTotal">46</div>
+      </div>
+      <div class="total-box">
+        <div class="total-label">Pending</div>
+        <div class="total-num" id="pendingTotal">5</div>
+      </div>
+      <div class="total-box">
+        <div class="total-label">New</div>
+        <div class="total-num" id="newTotal">20</div>
+      </div>
+      <div class="total-box">
+        <div class="total-label">Used</div>
+        <div class="total-num" id="usedTotal">30</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="group">
+      <label>Highlight color</label>
+      <button class="swatch none selected" data-color="" title="No fill / clear"></button>
+      <button class="swatch" style="background:#FFF59D" data-color="#FFF59D" title="Yellow"></button>
+      <button class="swatch" style="background:#90CAF9" data-color="#90CAF9" title="Blue"></button>
+      <button class="swatch" style="background:#A5D6A7" data-color="#A5D6A7" title="Green"></button>
+      <button class="swatch" style="background:#FFAB91" data-color="#FFAB91" title="Orange"></button>
+      <button class="swatch" style="background:#F48FB1" data-color="#F48FB1" title="Pink"></button>
+      <button class="swatch" style="background:#CE93D8" data-color="#CE93D8" title="Purple"></button>
+    </div>
+    <div class="group">
+      <button class="btn primary" id="saveBoardBtn">💾 Save Board</button>
+      <span class="last-saved" id="lastSavedNote"></span>
+      <button class="btn" id="printBtn">Print / Save as PDF</button>
+    </div>
+    <div class="group search-wrap">
+      <label for="vehicleSearchInput">🔍 Search</label>
+      <input type="text" id="vehicleSearchInput" class="search-input" placeholder="Stock # or model...">
+      <span class="search-count" id="searchMatchCount"></span>
+    </div>
+    <div class="group" style="margin-left:auto;">
+      <button class="btn danger" id="clearAllBtn">🗑 Clear All Data</button>
+      <button class="btn" id="lockBtn">🔒 Unlock to Edit</button>
+    </div>
+  </div>
+
+  <div class="locked-banner" id="lockedBanner">🔒 View-only — click "Unlock to Edit" and enter the password to make changes.</div>
+
+  <table id="board">
+    <thead>
+      <tr id="headerRow">
+        <th class="name-hdr">Salesperson</th>
+        <th style="min-width:44px;"></th>
+      <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>18</th><th>19</th><th>20</th></tr>
+    </thead>
+    <tbody id="boardBody"><tr class="block-start"><td class="name-cell" rowspan="5"><input type="checkbox" class="select-person" title="Select this salesperson to delete" disabled=""><span class="name-text" contenteditable="false">CHRISTY</span></td><td class="row-label">Year</td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2017</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2018</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2019</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2014</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td></tr><tr><td class="row-label">Model</td><td class="data field" contenteditable="false">camry</td><td class="data field" contenteditable="false">camry</td><td class="data field" contenteditable="false">rav4</td><td class="data field" contenteditable="false">equinox</td><td class="data field" contenteditable="false">camry</td><td class="data field" contenteditable="false">rav4</td><td class="data field" contenteditable="false">equinox</td><td class="data field" contenteditable="false">4runner</td><td class="data field" contenteditable="false">4runner</td><td class="data field" contenteditable="false">signia</td><td class="data field" contenteditable="false">silverado</td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td></tr><tr><td class="row-label">Stock</td><td class="data field" contenteditable="false">tc26443</td><td class="data field" contenteditable="false">tc26461</td><td class="data field" contenteditable="false">tt25563a</td><td class="data field" contenteditable="false">31923a</td><td class="data field" contenteditable="false">tc26483</td><td class="data field" contenteditable="false">tt26482</td><td class="data field" contenteditable="false">t26422a</td><td class="data field" contenteditable="false">tt26381</td><td class="data field" contenteditable="false">tt26478</td><td class="data field" contenteditable="false">tt26476</td><td class="data field" contenteditable="false">tt26271b</td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td></tr><tr><td class="row-label">Type</td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td></tr><tr><td class="row-label">Note</td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" checked="" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" checked="" disabled=""><span class="note-text field" contenteditable="false">pending</span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false">pending</span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td></tr><tr class="block-start"><td class="name-cell" rowspan="5"><input type="checkbox" class="select-person" title="Select this salesperson to delete" disabled=""><span class="name-text" contenteditable="false">ALEX</span></td><td class="row-label">Year</td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2020</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2024</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2020</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2025</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2021</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td></tr><tr><td class="row-label">Model</td><td class="data field" contenteditable="false">tacoma</td><td class="data field" contenteditable="false">prius</td><td class="data field" contenteditable="false">corolla</td><td class="data field" contenteditable="false">cross</td><td class="data field" contenteditable="false">caravan</td><td class="data field" contenteditable="false">grand</td><td class="data field" contenteditable="false">rav4</td><td class="data field" contenteditable="false">Rav4</td><td class="data field" contenteditable="false">wrangler</td><td class="data field" contenteditable="false">highlander</td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td></tr><tr><td class="row-label">Stock</td><td class="data field" contenteditable="false">tt26315</td><td class="data field" contenteditable="false">tc26067</td><td class="data field" contenteditable="false">31935</td><td class="data field" contenteditable="false">tt26401a</td><td class="data field" contenteditable="false">t2558a</td><td class="data field" contenteditable="false">tt26438</td><td class="data field" contenteditable="false">tt26484</td><td class="data field" contenteditable="false">TT25560</td><td class="data field" contenteditable="false">t26303b</td><td class="data field" contenteditable="false">tt26453</td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td></tr><tr><td class="row-label">Type</td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td></tr><tr><td class="row-label">Note</td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" checked="" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td></tr><tr class="block-start"><td class="name-cell" rowspan="5"><input type="checkbox" class="select-person" title="Select this salesperson to delete" disabled=""><span class="name-text" contenteditable="false">RICK</span></td><td class="row-label">Year</td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2022</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2015</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2021</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2023</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2018</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2020</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td></tr><tr><td class="row-label">Model</td><td class="data field" contenteditable="false">pathfinder</td><td class="data field" contenteditable="false">4Runner</td><td class="data field" contenteditable="false">Prius</td><td class="data field" contenteditable="false">Gladiator</td><td class="data field" contenteditable="false">silverado</td><td class="data field" contenteditable="false">cross</td><td class="data field" contenteditable="false">sorento</td><td class="data field" contenteditable="false">grand</td><td class="data field" contenteditable="false">Corsair</td><td class="data field" contenteditable="false">4runner</td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td></tr><tr><td class="row-label">Stock</td><td class="data field" contenteditable="false">tt26429a</td><td class="data field" contenteditable="false">tt26413</td><td class="data field" contenteditable="false">tc26433a</td><td class="data field" contenteditable="false">34835a</td><td class="data field" contenteditable="false">t26105a</td><td class="data field" contenteditable="false">tt25486</td><td class="data field" contenteditable="false">tt26309b</td><td class="data field" contenteditable="false">tt26472</td><td class="data field" contenteditable="false">tt26409a</td><td class="data field" contenteditable="false">tt26367</td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td></tr><tr><td class="row-label">Type</td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td></tr><tr><td class="row-label">Note</td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false">pending</span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td></tr><tr class="block-start"><td class="name-cell" rowspan="5"><input type="checkbox" class="select-person" title="Select this salesperson to delete" disabled=""><span class="name-text" contenteditable="false">JON</span></td><td class="row-label">Year</td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2023</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2023</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2023</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2016</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2024</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2021</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2021</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2020</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td></tr><tr><td class="row-label">Model</td><td class="data field" contenteditable="false">Suburban</td><td class="data field" contenteditable="false">Traverse</td><td class="data field" contenteditable="false">Highlander</td><td class="data field" contenteditable="false">silverado</td><td class="data field" contenteditable="false">trax</td><td class="data field" contenteditable="false">silverado</td><td class="data field" contenteditable="false">Tundra</td><td class="data field" contenteditable="false">Q5</td><td class="data field" contenteditable="false">Rav4</td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td></tr><tr><td class="row-label">Stock</td><td class="data field" contenteditable="false">31936</td><td class="data field" contenteditable="false">t26421a</td><td class="data field" contenteditable="false">tt26283a</td><td class="data field" contenteditable="false">t26452</td><td class="data field" contenteditable="false">t26321a</td><td class="data field" contenteditable="false">t26312a</td><td class="data field" contenteditable="false">tt26494</td><td class="data field" contenteditable="false">tt26270a</td><td class="data field" contenteditable="false">31932</td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td></tr><tr><td class="row-label">Type</td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td></tr><tr><td class="row-label">Note</td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" checked="" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" checked="" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td></tr><tr class="block-start"><td class="name-cell" rowspan="5"><input type="checkbox" class="select-person" title="Select this salesperson to delete" disabled=""><span class="name-text" contenteditable="false">TODD</span></td><td class="row-label">Year</td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2012</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2012</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2017</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2022</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td></tr><tr><td class="row-label">Model</td><td class="data field" contenteditable="false">tundra</td><td class="data field" contenteditable="false">camry</td><td class="data field" contenteditable="false">cruze</td><td class="data field" contenteditable="false">versa</td><td class="data field" contenteditable="false">edge</td><td class="data field" contenteditable="false">sierra</td><td class="data field" contenteditable="false">4runner</td><td class="data field" contenteditable="false">grand</td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td></tr><tr><td class="row-label">Stock</td><td class="data field" contenteditable="false">t26423</td><td class="data field" contenteditable="false">tc26417</td><td class="data field" contenteditable="false">tt26423a</td><td class="data field" contenteditable="false">tt26305b</td><td class="data field" contenteditable="false">tt26405a</td><td class="data field" contenteditable="false">tt26207a</td><td class="data field" contenteditable="false">tt26273</td><td class="data field" contenteditable="false">tt26491</td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td></tr><tr><td class="row-label">Type</td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="new" disabled="">NEW</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td></tr><tr><td class="row-label">Note</td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" checked="" disabled=""><span class="note-text field" contenteditable="false">pending</span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" checked="" disabled=""><span class="note-text field" contenteditable="false">pending</span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td></tr><tr class="block-start"><td class="name-cell" rowspan="5"><input type="checkbox" class="select-person" title="Select this salesperson to delete" disabled=""><span class="name-text" contenteditable="false">OTHERS</span></td><td class="row-label">Year</td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2026</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2023</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false">2023</span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td><td class="data year-cell"><div class="year-row-inner"><span class="year-text field" contenteditable="false"></span><button type="button" class="slot-delete" title="Delete this car's info" disabled="">×</button></div></td></tr><tr><td class="row-label">Model</td><td class="data field" contenteditable="false">trax</td><td class="data field" contenteditable="false">traverse</td><td class="data field" contenteditable="false">blazer</td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td></tr><tr><td class="row-label">Stock</td><td class="data field" contenteditable="false">t26464a</td><td class="data field" contenteditable="false">t26403a</td><td class="data field" contenteditable="false">t26469</td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td><td class="data field" contenteditable="false"></td></tr><tr><td class="row-label">Type</td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="used" disabled="">USED</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td><td class="type-cell"><button type="button" class="type-toggle" data-car-type="" disabled="">—</button></td></tr><tr><td class="row-label">Note</td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false">pass thru</span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td><td class="notes"><div class="note-row-inner"><input type="checkbox" class="pending-check" title="Check to auto-fill this note with &quot;pending&quot;" disabled=""><span class="note-text field" contenteditable="false"></span></div></td></tr></tbody>
+  </table>
+
+  <div class="footer-bar">
+    <button class="btn primary" id="addPersonBtn2">+ Add Salesperson</button>
+    <button class="btn danger" id="deletePersonBtn">🗑 Delete Salesperson</button>
+    <span style="font-size:11px;color:#6b7280;">20 sale slots per person shown — scroll right to see them all.</span>
+  </div>
+
+  <div class="hint">
+    <b>How to use:</b> Click any Year / Model / Stock box and type directly — it saves as you type. Press <b>Enter</b> to jump straight to the next field. Each car also has its own Type tag and Note box right below it, so those always stay with that car.
+    Pick a highlight color above, then click a box (or click-drag isn't needed — just click each box in the entry) to color-code it.
+    Click "No fill" then a box to clear its color.
+    <b>Search:</b> use the search box in the toolbar to find a car by stock number or model — matching boxes get a blue outline and the board scrolls to the first match.
+    <b>Sold / Pending:</b> once a car's Year and Model are both filled in, it's counted automatically — a Stock # isn't required. Check the small box next to that car's Note to auto-fill the word "pending" into the note (so you don't have to type it) and move the car to the Pending total — uncheck it to remove the word and move it back to Sold. You can still just type "pending" yourself too — the checkbox stays in sync either way, and any other note text you've added stays put. Clear the Year and Model and the car drops out of both totals.
+    <b>New / Used:</b> click the small tag under a car's Year/Model/Stock to mark it — click cycles blank → NEW → USED → blank, and the New/Used totals in the header update automatically.
+    <b>Deleting a salesperson:</b> check the small box in the top-left corner of their name (their row gets a light red tint), then click "Delete Salesperson" at the bottom and confirm.
+    <b>Undo:</b> clearing all data or deleting a salesperson both show a brief "Undo" option at the bottom of the screen right after.
+    <b>Month:</b> the dropdown in the header remembers your last selection automatically, and is also saved into the file when you save.
+    <b>To keep your edits:</b> click the <b>💾 Save Board</b> button any time — or just press <b>Ctrl/Cmd + S</b>. In Chrome or Edge, this asks where you'd like to save it the first time, then keeps saving straight to that same file after that (open the page again later and it'll ask again). In Firefox or Safari it downloads straight to your default downloads folder instead. A small "Last saved" note appears next to the button after each save. If you try to close the page with unsaved changes, your browser will ask you to confirm first.
+    <b>Sorting:</b> the board automatically re-sorts so whoever has the most cars out (filled or color-coded boxes) sits at the top of the list.
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="pwOverlay">
+  <div class="modal-box">
+    <h2>Enter password to edit</h2>
+    <p>This board is view-only until unlocked.</p>
+    <input type="password" id="pwInput" placeholder="Password" autocomplete="off">
+    <div class="modal-error" id="pwError"></div>
+    <div class="modal-actions">
+      <button class="btn" id="pwCancel">Cancel</button>
+      <button class="btn primary" id="pwSubmit">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="clearOverlay">
+  <div class="modal-box danger-box">
+    <h2>Clear all data?</h2>
+    <p class="modal-warning">This will erase every year, model, stock, note, New/Used tag, and highlight color on the board — salesperson names will stay. You'll have a short window to undo right after.</p>
+    <div class="modal-actions">
+      <button class="btn" id="clearCancel">Cancel</button>
+      <button class="btn danger" id="clearConfirm">Yes, Clear Everything</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="deleteOverlay">
+  <div class="modal-box danger-box">
+    <h2>Delete selected salesperson?</h2>
+    <p class="modal-warning" id="deleteWarningText">This will remove all 2 checked salespeople and their car data. You'll have a short window to undo right after.</p>
+    <div class="modal-actions">
+      <button class="btn" id="deleteCancel">Cancel</button>
+      <button class="btn danger" id="deleteConfirm">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="slotDeleteOverlay">
+  <div class="modal-box danger-box">
+    <h2>Delete this car?</h2>
+    <p class="modal-warning">This will clear this car's Year, Model, Stock, Type, and Note, and the rest of that row will shift left to fill the gap.</p>
+    <div class="modal-actions">
+      <button class="btn" id="slotDeleteCancel">Cancel</button>
+      <button class="btn danger" id="slotDeleteConfirm">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="undo-toast hidden" id="undoToast">
+  <span id="undoToastMessage">2 salespeople deleted.</span>
+  <button id="undoClearBtn">↩️ Undo</button>
+</div>
+
+<script>
+const BOARD_PASSWORD = "5150";
+const SLOTS = 20;
+const rowLabels = ["Year","Model","Stock","Type","Note"];
+let activeColor = "";
+let unlocked = false;
+let hasUnsavedChanges = false;
+function markDirty(){ hasUnsavedChanges = true; }
+
+const headerRow = document.getElementById('headerRow');
+while(headerRow.children.length > 2){
+  headerRow.removeChild(headerRow.lastElementChild);
+}
+for(let i=1;i<=SLOTS;i++){
+  const th = document.createElement('th');
+  th.textContent = i;
+  headerRow.appendChild(th);
+}
+
+function buildBlock(name){
+  const frag = document.createDocumentFragment();
+  const rows = [];
+  for(let r=0;r<5;r++){
+    const tr = document.createElement('tr');
+    if(r===0) tr.classList.add('block-start');
+
+    if(r===0){
+      const nameTd = document.createElement('td');
+      nameTd.className = 'name-cell';
+      nameTd.rowSpan = 5;
+
+      const selectBox = document.createElement('input');
+      selectBox.type = 'checkbox';
+      selectBox.className = 'select-person';
+      selectBox.title = 'Select this salesperson to delete';
+      selectBox.disabled = !unlocked;
+      nameTd.appendChild(selectBox);
+
+      const nameText = document.createElement('span');
+      nameText.className = 'name-text';
+      nameText.contentEditable = unlocked ? 'true' : 'false';
+      nameText.textContent = name || '';
+      nameTd.appendChild(nameText);
+
+      tr.appendChild(nameTd);
+    }
+
+    const labelTd = document.createElement('td');
+    labelTd.className = 'row-label';
+    labelTd.textContent = rowLabels[r];
+    tr.appendChild(labelTd);
+
+    for(let s=0;s<SLOTS;s++){
+      if(r === 0){
+        const td = document.createElement('td');
+        td.className = 'data year-cell';
+
+        const inner = document.createElement('div');
+        inner.className = 'year-row-inner';
+
+        const span = document.createElement('span');
+        span.className = 'year-text field';
+        span.contentEditable = unlocked ? 'true' : 'false';
+        inner.appendChild(span);
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'slot-delete';
+        delBtn.title = "Delete this car's info";
+        delBtn.textContent = '\u00d7';
+        delBtn.disabled = !unlocked;
+        inner.appendChild(delBtn);
+
+        td.appendChild(inner);
+        tr.appendChild(td);
+      } else if(r < 3){
+        const td = document.createElement('td');
+        td.className = 'data field';
+        td.contentEditable = unlocked ? 'true' : 'false';
+        tr.appendChild(td);
+      } else if(r === 3){
+        const td = document.createElement('td');
+        td.className = 'type-cell';
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'type-toggle';
+        btn.dataset.carType = '';
+        btn.textContent = '—';
+        btn.disabled = !unlocked;
+        td.appendChild(btn);
+        tr.appendChild(td);
+      } else {
+        const td = document.createElement('td');
+        td.className = 'notes';
+
+        const inner = document.createElement('div');
+        inner.className = 'note-row-inner';
+
+        const pendingCb = document.createElement('input');
+        pendingCb.type = 'checkbox';
+        pendingCb.className = 'pending-check';
+        pendingCb.title = 'Check to auto-fill this note with "pending"';
+        pendingCb.disabled = !unlocked;
+        inner.appendChild(pendingCb);
+
+        const noteSpan = document.createElement('span');
+        noteSpan.className = 'note-text field';
+        noteSpan.contentEditable = unlocked ? 'true' : 'false';
+        inner.appendChild(noteSpan);
+
+        td.appendChild(inner);
+        tr.appendChild(td);
+      }
+    }
+    rows.push(tr);
+    frag.appendChild(tr);
+  }
+  return frag;
+}
+
+function normalizeNameCell(nameTd){
+  if(!nameTd) return;
+  if(nameTd.querySelector('input.select-person')) return;
+
+  const existingText = nameTd.textContent.trim();
+  nameTd.textContent = '';
+  nameTd.removeAttribute('contenteditable');
+
+  const selectBox = document.createElement('input');
+  selectBox.type = 'checkbox';
+  selectBox.className = 'select-person';
+  selectBox.title = 'Select this salesperson to delete';
+  selectBox.disabled = !unlocked;
+  nameTd.appendChild(selectBox);
+
+  const nameText = document.createElement('span');
+  nameText.className = 'name-text';
+  nameText.contentEditable = unlocked ? 'true' : 'false';
+  nameText.textContent = existingText;
+  nameTd.appendChild(nameText);
+}
+
+// Converts an old plain-text Year cell (a directly-contentEditable td)
+// into the current span + red delete-button format, preserving whatever
+// year was typed and any highlight color. Also tops up a missing delete
+// button on cells that were already migrated in an earlier version.
+function normalizeYearRow(yearTr){
+  if(!yearTr) return;
+  const cells = Array.from(yearTr.querySelectorAll('td.data'));
+  cells.forEach(td=>{
+    td.classList.add('year-cell');
+    td.classList.remove('field');
+    let inner = td.querySelector('.year-row-inner');
+    if(!inner){
+      const oldText = td.textContent.trim();
+      const oldBg = td.style.background;
+      td.textContent = '';
+      td.removeAttribute('contenteditable');
+
+      inner = document.createElement('div');
+      inner.className = 'year-row-inner';
+
+      const span = document.createElement('span');
+      span.className = 'year-text field';
+      span.contentEditable = unlocked ? 'true' : 'false';
+      span.textContent = oldText;
+      inner.appendChild(span);
+
+      td.appendChild(inner);
+      if(oldBg) td.style.background = oldBg;
+    }
+    if(!inner.querySelector('button.slot-delete')){
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'slot-delete';
+      btn.title = "Delete this car's info";
+      btn.textContent = '\u00d7';
+      btn.disabled = !unlocked;
+      inner.appendChild(btn);
+    }
+  });
+}
+
+function normalizeRowLabels(trs){
+  trs.forEach((tr, idx) => {
+    const lbl = tr.querySelector('td.row-label');
+    if(lbl && rowLabels[idx]) lbl.textContent = rowLabels[idx];
+  });
+}
+
+// Older saved boards' Year/Model/Stock cells predate the 'field' class
+// (used for Enter-key field-to-field navigation) — make sure it's present.
+function ensureDataFieldClass(trs){
+  for(let r=1; r<3 && r<trs.length; r++){
+    trs[r].querySelectorAll('td.data').forEach(td => td.classList.add('field'));
+  }
+}
+
+// Parses old free-typed note text (which may have contained the word
+// "pending" as a keyword) into the new format: a checked/unchecked
+// checkbox plus cleaned-up note text with the word "pending" and any
+// leftover punctuation around it removed.
+// Note text is left exactly as it was typed (including the word "pending"
+// if it's in there) — the checkbox is just derived from whether that word
+// is present, using the same word-boundary match everywhere in the board.
+function noteHasPending(text){
+  return /\bpending\b/i.test((text || '').trim());
+}
+
+function applyMigratedNoteText(newNoteTd, oldText){
+  const cb = newNoteTd.querySelector('input.pending-check');
+  const span = newNoteTd.querySelector('span.note-text');
+  if(span) span.textContent = (oldText || '').trim();
+  if(cb){
+    const has = noteHasPending(oldText);
+    cb.checked = has;
+    if(has) cb.setAttribute('checked',''); else cb.removeAttribute('checked');
+  }
+}
+
+// Converts an old plain-text note cell (a directly-contentEditable td,
+// possibly containing the typed word "pending") into the current
+// checkbox + editable-span format, preserving whatever was typed exactly
+// as-is.
+function normalizeNoteRow(noteTr){
+  if(!noteTr) return;
+  const cells = Array.from(noteTr.querySelectorAll('td.notes'));
+  cells.forEach(td=>{
+    if(td.querySelector('input.pending-check')) return; // already current format
+    const oldText = td.textContent.trim();
+    td.textContent = '';
+    td.removeAttribute('contenteditable');
+
+    const inner = document.createElement('div');
+    inner.className = 'note-row-inner';
+
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'pending-check';
+    cb.title = 'Check to auto-fill this note with "pending"';
+    cb.disabled = !unlocked;
+    inner.appendChild(cb);
+
+    const span = document.createElement('span');
+    span.className = 'note-text field';
+    span.contentEditable = unlocked ? 'true' : 'false';
+    inner.appendChild(span);
+
+    td.appendChild(inner);
+
+    applyMigratedNoteText(td, oldText);
+  });
+}
+
+function migrateBoardIfNeeded(boardBody){
+  const rows = Array.from(boardBody.children);
+  if(rows.length === 0) return;
+
+  const blockStartIdx = [];
+  rows.forEach((tr, i) => { if(tr.classList.contains('block-start')) blockStartIdx.push(i); });
+  if(blockStartIdx.length === 0) return;
+
+  const blocks = blockStartIdx.map((start, idx) => {
+    const end = (idx + 1 < blockStartIdx.length) ? blockStartIdx[idx + 1] : rows.length;
+    return rows.slice(start, end);
+  });
+
+  const rebuilt = document.createDocumentFragment();
+
+  blocks.forEach(trs=>{
+    const isAncient = trs.some(tr => tr.querySelector('td.notes[colspan]') || tr.querySelector('.row-actions'));
+
+    const rowLabelTexts = trs.map(tr => {
+      const lbl = tr.querySelector('td.row-label');
+      return lbl ? lbl.textContent.trim() : '';
+    });
+    const isOldOrder5 = !isAncient && trs.length === 5 && rowLabelTexts[3] === 'Note' && rowLabelTexts[4] === 'Type';
+    const isCurrent = !isAncient && !isOldOrder5 && trs.length >= 5;
+
+    if(isCurrent){
+      normalizeNameCell(trs[0].querySelector('td.name-cell'));
+      normalizeRowLabels(trs);
+      normalizeNoteRow(trs[4]);
+      ensureDataFieldClass(trs);
+      normalizeYearRow(trs[0]);
+      trs.forEach(tr => rebuilt.appendChild(tr));
+      return;
+    }
+
+    if(isOldOrder5){
+      normalizeNameCell(trs[0].querySelector('td.name-cell'));
+      const swapped = [trs[0], trs[1], trs[2], trs[4], trs[3]];
+      normalizeRowLabels(swapped);
+      normalizeNoteRow(swapped[4]);
+      ensureDataFieldClass(swapped);
+      normalizeYearRow(swapped[0]);
+      swapped.forEach(tr => rebuilt.appendChild(tr));
+      return;
+    }
+
+    const nameCell = trs[0].querySelector('td.name-cell');
+    const name = nameCell ? nameCell.textContent.trim() : '';
+    const newRows = Array.from(buildBlock(name).childNodes).filter(n => n.nodeType === 1);
+
+    if(isAncient){
+      for(let r=0; r<3; r++){
+        const oldCells = trs[r] ? trs[r].querySelectorAll('td.data') : [];
+        const newCells = newRows[r].querySelectorAll('td.data');
+        oldCells.forEach((oldTd, s)=>{
+          if(!newCells[s]) return;
+          if(r === 0){
+            const span = newCells[s].querySelector('span.year-text');
+            if(span) span.textContent = oldTd.textContent;
+          } else {
+            newCells[s].textContent = oldTd.textContent;
+          }
+          if(oldTd.style.background) newCells[s].style.background = oldTd.style.background;
+        });
+      }
+      const oldNoteRow = trs.find(tr => tr.querySelector('td.notes'));
+      const oldNote = oldNoteRow ? oldNoteRow.querySelector('td.notes') : null;
+      if(oldNote && oldNote.textContent.trim()){
+        const newNoteCells = newRows[4].querySelectorAll('td.notes');
+        if(newNoteCells[0]) applyMigratedNoteText(newNoteCells[0], oldNote.textContent);
+      }
+    } else {
+      for(let r=0; r<3; r++){
+        const oldCells = trs[r] ? trs[r].querySelectorAll('td.data') : [];
+        const newCells = newRows[r].querySelectorAll('td.data');
+        oldCells.forEach((oldTd, s)=>{
+          if(!newCells[s]) return;
+          if(r === 0){
+            const span = newCells[s].querySelector('span.year-text');
+            if(span) span.textContent = oldTd.textContent;
+          } else {
+            newCells[s].textContent = oldTd.textContent;
+          }
+          if(oldTd.style.background) newCells[s].style.background = oldTd.style.background;
+        });
+      }
+      const oldNoteRow = trs[3];
+      const oldNoteCells = oldNoteRow ? oldNoteRow.querySelectorAll('td.notes') : [];
+      const newNoteCells = newRows[4].querySelectorAll('td.notes');
+      oldNoteCells.forEach((oldTd, s)=>{
+        if(!newNoteCells[s]) return;
+        applyMigratedNoteText(newNoteCells[s], oldTd.textContent);
+      });
+    }
+
+    newRows.forEach(tr => rebuilt.appendChild(tr));
+  });
+
+  // Always recommit: every row was moved into `rebuilt` above (whether
+  // passed through as-is or newly rebuilt), so this must run unconditionally
+  // or the board would be left empty.
+  boardBody.innerHTML = '';
+  boardBody.appendChild(rebuilt);
+}
+
+const boardBody = document.getElementById('boardBody');
+migrateBoardIfNeeded(boardBody);
+if(boardBody.children.length === 0){
+  for(let i=0;i<8;i++){ boardBody.appendChild(buildBlock('')); }
+}
+
+boardBody.addEventListener('click', (e)=>{
+  if(!unlocked) return;
+
+  const delBtn = e.target.closest('button.slot-delete');
+  if(delBtn){
+    const yearCell = delBtn.closest('td.data');
+    const yearRow = yearCell ? yearCell.closest('tr') : null;
+    const trs = getSalespersonBlocks().find(block => block[0] === yearRow);
+    if(!trs) return;
+    const yearCells = Array.from(trs[0].querySelectorAll('td.data'));
+    const slotIndex = yearCells.indexOf(yearCell);
+    if(slotIndex === -1) return;
+    openSlotDeleteModal(trs, slotIndex);
+    return;
+  }
+
+  const typeBtn = e.target.closest('button.type-toggle');
+  if(typeBtn){
+    const current = typeBtn.dataset.carType || '';
+    const next = current === '' ? 'new' : (current === 'new' ? 'used' : '');
+    typeBtn.dataset.carType = next;
+    typeBtn.textContent = next === 'new' ? 'NEW' : (next === 'used' ? 'USED' : '—');
+    updateTotals();
+    markDirty();
+    return;
+  }
+
+  const dataCell = e.target.closest('td.data');
+  if(dataCell){
+    dataCell.style.background = activeColor;
+    sortBoardByCarsOut();
+    updateTotals();
+    markDirty();
+    return;
+  }
+});
+
+// Checking this box auto-fills the word "pending" into that car's note
+// (so you don't have to type it); unchecking it removes just that word,
+// leaving any other note text intact. Typing "pending" yourself also
+// checks the box automatically — the two stay in sync either way.
+function setPendingWord(noteSpan, shouldHave){
+  const current = noteSpan.textContent;
+  const already = noteHasPending(current);
+  if(shouldHave && !already){
+    const trimmed = current.trim();
+    noteSpan.textContent = trimmed.length ? (trimmed + ' - pending') : 'pending';
+  } else if(!shouldHave && already){
+    let cleaned = current.replace(/\bpending\b/gi, '');
+    cleaned = cleaned.replace(/^[\s\-–—:,]+/, '').replace(/[\s\-–—:,]+$/, '').trim();
+    noteSpan.textContent = cleaned;
+  }
+}
+
+boardBody.addEventListener('change', (e)=>{
+  if(!unlocked) return;
+
+  const pendingCb = e.target.closest('input.pending-check');
+  if(pendingCb){
+    const td = pendingCb.closest('td.notes');
+    const noteSpan = td ? td.querySelector('span.note-text') : null;
+    if(noteSpan) setPendingWord(noteSpan, pendingCb.checked);
+    sortBoardByCarsOut();
+    updateTotals();
+    markDirty();
+    return;
+  }
+
+  const selectCb = e.target.closest('input.select-person');
+  if(selectCb){
+    const trs = getSalespersonBlocks().find(block => block[0].querySelector('input.select-person') === selectCb);
+    if(trs) trs.forEach(tr => tr.classList.toggle('marked-for-delete', selectCb.checked));
+  }
+});
+
+boardBody.addEventListener('input', (e)=>{
+  if(!unlocked) return;
+  const noteSpan = e.target.closest('span.note-text');
+  if(noteSpan){
+    const td = noteSpan.closest('td.notes');
+    const cb = td ? td.querySelector('input.pending-check') : null;
+    if(cb) cb.checked = noteHasPending(noteSpan.textContent);
+    markDirty();
+    return;
+  }
+  if(e.target.closest('.field, span.name-text')) markDirty();
+});
+
+boardBody.addEventListener('focusout', (e)=>{
+  if(!unlocked) return;
+  const cell = e.target.closest('.field');
+  if(cell){
+    sortBoardByCarsOut();
+    updateTotals();
+    runVehicleSearch();
+  }
+});
+
+// ---- Enter key jumps to the next field (Year -> Model -> Stock -> Note ->
+// next car's Year), instead of inserting a line break. Shift+Enter still
+// inserts a line break as usual (useful for multi-line notes). Fields are
+// simply every element with the 'field' class, in the order they appear in
+// the table — which naturally skips the Type row (buttons, not fields) and
+// skips a Note field that's currently hidden behind a checked Pending box.
+function placeCaretAtEnd(el){
+  el.focus();
+  if(typeof window.getSelection !== "undefined" && typeof document.createRange !== "undefined"){
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+}
+
+function isFieldUsable(el){
+  if(el.contentEditable !== 'true') return false;
+  if(el.offsetParent === null) return false; // hidden (e.g. note behind a checked Pending box)
+  return true;
+}
+
+function focusNextField(cell){
+  const fields = Array.from(document.querySelectorAll('#boardBody .field'));
+  const idx = fields.indexOf(cell);
+  if(idx === -1) return;
+  for(let i = idx + 1; i < fields.length; i++){
+    if(isFieldUsable(fields[i])){ placeCaretAtEnd(fields[i]); return; }
+  }
+}
+
+boardBody.addEventListener('keydown', (e)=>{
+  if(!unlocked) return;
+  if(e.key !== 'Enter' || e.shiftKey) return;
+  const cell = e.target.closest('.field');
+  if(!cell) return;
+  e.preventDefault();
+  focusNextField(cell);
+});
+
+function getSalespersonBlocks(){
+  const rows = Array.from(boardBody.children);
+  const blocks = [];
+  for(let i=0; i<rows.length; i+=5){
+    const trs = rows.slice(i, i+5);
+    if(trs.length === 5) blocks.push(trs);
+  }
+  return blocks;
+}
+
+// Deletes one car's info (Year/Model/Stock/Type/Note + highlight color) at
+// slotIndex within a salesperson's block, then shifts every slot after it
+// one place to the left so the freed-up slot doesn't leave a gap. The very
+// last slot ends up empty.
+function deleteSlotAndShiftLeft(trs, slotIndex){
+  const yearCells = Array.from(trs[0].querySelectorAll('td.data'));
+  const modelCells = Array.from(trs[1].querySelectorAll('td.data'));
+  const stockCells = Array.from(trs[2].querySelectorAll('td.data'));
+  const typeBtns = Array.from(trs[3].querySelectorAll('button.type-toggle'));
+  const noteTds = Array.from(trs[4].querySelectorAll('td.notes'));
+
+  function yearText(cell){
+    const span = cell.querySelector('span.year-text');
+    return span ? span.textContent : '';
+  }
+  function setYearText(cell, text){
+    const span = cell.querySelector('span.year-text');
+    if(span) span.textContent = text;
+  }
+  function noteParts(noteTd){
+    const span = noteTd.querySelector('span.note-text');
+    const cb = noteTd.querySelector('input.pending-check');
+    return { text: span ? span.textContent : '', checked: cb ? cb.checked : false };
+  }
+  function setNoteParts(noteTd, parts){
+    const span = noteTd.querySelector('span.note-text');
+    const cb = noteTd.querySelector('input.pending-check');
+    if(span) span.textContent = parts.text;
+    if(cb){
+      cb.checked = parts.checked;
+      if(parts.checked) cb.setAttribute('checked',''); else cb.removeAttribute('checked');
+    }
+  }
+
+  for(let s=slotIndex; s<SLOTS-1; s++){
+    setYearText(yearCells[s], yearText(yearCells[s+1]));
+    yearCells[s].style.background = yearCells[s+1].style.background;
+
+    modelCells[s].textContent = modelCells[s+1].textContent;
+    modelCells[s].style.background = modelCells[s+1].style.background;
+
+    stockCells[s].textContent = stockCells[s+1].textContent;
+    stockCells[s].style.background = stockCells[s+1].style.background;
+
+    typeBtns[s].dataset.carType = typeBtns[s+1].dataset.carType || '';
+    typeBtns[s].textContent = typeBtns[s+1].textContent;
+
+    setNoteParts(noteTds[s], noteParts(noteTds[s+1]));
+  }
+
+  const last = SLOTS - 1;
+  setYearText(yearCells[last], '');
+  yearCells[last].style.background = '';
+  modelCells[last].textContent = '';
+  modelCells[last].style.background = '';
+  stockCells[last].textContent = '';
+  stockCells[last].style.background = '';
+  typeBtns[last].dataset.carType = '';
+  typeBtns[last].textContent = '\u2014';
+  setNoteParts(noteTds[last], { text: '', checked: false });
+}
+
+function countCarsOut(blockTrs){
+  let count = 0;
+  for(let s=0; s<SLOTS; s++){
+    let occupied = false;
+    for(let r=0; r<3; r++){
+      const dataCells = blockTrs[r].querySelectorAll('td.data');
+      const cell = dataCells[s];
+      if(!cell) continue;
+      const text = r === 0 ? (cell.querySelector('span.year-text') ? cell.querySelector('span.year-text').textContent : '') : cell.textContent;
+      const hasText = text.trim().length > 0;
+      const hasColor = !!(cell.style.background && cell.style.background !== '');
+      if(hasText || hasColor){ occupied = true; break; }
+    }
+    if(occupied) count++;
+  }
+  return count;
+}
+
+function sortBoardByCarsOut(){
+  const blocks = getSalespersonBlocks();
+  const withCounts = blocks.map(trs => ({ trs, count: countCarsOut(trs) }));
+  withCounts.sort((a,b) => b.count - a.count);
+  const newOrder = withCounts.map(o => o.trs);
+
+  let changed = false;
+  for(let i=0; i<blocks.length; i++){
+    if(blocks[i] !== newOrder[i]){ changed = true; break; }
+  }
+  if(!changed) return;
+
+  const frag = document.createDocumentFragment();
+  newOrder.forEach(trs => trs.forEach(tr => frag.appendChild(tr)));
+  boardBody.appendChild(frag);
+}
+
+function updateTotals(){
+  const blocks = getSalespersonBlocks();
+  let sold = 0, pending = 0, newCount = 0, usedCount = 0;
+
+  blocks.forEach(trs=>{
+    const yearCells = trs[0].querySelectorAll('td.data');
+    const modelCells = trs[1].querySelectorAll('td.data');
+    const stockCells = trs[2].querySelectorAll('td.data');
+    const typeCells = trs[3].querySelectorAll('button.type-toggle');
+    const noteCells = trs[4].querySelectorAll('span.note-text');
+
+    for(let s=0; s<SLOTS; s++){
+      const yearSpan = yearCells[s] ? yearCells[s].querySelector('span.year-text') : null;
+      const year = yearSpan ? yearSpan.textContent.trim() : '';
+      const model = modelCells[s] ? modelCells[s].textContent.trim() : '';
+      const stock = stockCells[s] ? stockCells[s].textContent.trim() : '';
+      const isPending = noteCells[s] ? noteHasPending(noteCells[s].textContent) : false;
+      const carType = typeCells[s] ? (typeCells[s].dataset.carType || '') : '';
+
+      const filled = year.length > 0 && model.length > 0;
+      if(!filled) continue;
+
+      if(isPending){
+        pending++;
+      } else {
+        sold++;
+      }
+
+      if(carType === 'new') newCount++;
+      else if(carType === 'used') usedCount++;
+    }
+  });
+
+  document.getElementById('soldTotal').textContent = sold;
+  document.getElementById('pendingTotal').textContent = pending;
+  document.getElementById('newTotal').textContent = newCount;
+  document.getElementById('usedTotal').textContent = usedCount;
+}
+
+function addPerson(){
+  if(!unlocked) return;
+  boardBody.appendChild(buildBlock(''));
+  updateTotals();
+  markDirty();
+}
+document.getElementById('addPersonBtn2').addEventListener('click', addPerson);
+
+document.querySelectorAll('.swatch').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    if(!unlocked) return;
+    document.querySelectorAll('.swatch').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    activeColor = btn.dataset.color;
+  });
+});
+
+document.getElementById('printBtn').addEventListener('click', ()=>window.print());
+
+const MONTH_STORAGE_KEY = 'thayerToyotaBoardMonth';
+const monthSelect = document.getElementById('monthSelect');
+function syncMonthSelectedAttr(){
+  Array.from(monthSelect.options).forEach(opt => opt.removeAttribute('selected'));
+  monthSelect.options[monthSelect.selectedIndex].setAttribute('selected','selected');
+  try{ localStorage.setItem(MONTH_STORAGE_KEY, monthSelect.value); }catch(err){}
+}
+monthSelect.addEventListener('change', ()=>{ syncMonthSelectedAttr(); markDirty(); });
+
+let storedMonth = null;
+try{ storedMonth = localStorage.getItem(MONTH_STORAGE_KEY); }catch(err){}
+if(storedMonth && Array.from(monthSelect.options).some(o => o.value === storedMonth)){
+  monthSelect.value = storedMonth;
+  syncMonthSelectedAttr();
+} else if(!monthSelect.querySelector('option[selected]')){
+  const now = new Date();
+  const monthName = now.toLocaleString('en-US', { month: 'long' });
+  const opt = Array.from(monthSelect.options).find(o => o.value === monthName);
+  if(opt){ monthSelect.value = monthName; syncMonthSelectedAttr(); }
+}
+
+// ---- vehicle search: highlights matching Model / Stock boxes ----
+const vehicleSearchInput = document.getElementById('vehicleSearchInput');
+const searchMatchCount = document.getElementById('searchMatchCount');
+
+function runVehicleSearch(){
+  const query = vehicleSearchInput.value.trim().toLowerCase();
+  document.querySelectorAll('td.search-match').forEach(td => td.classList.remove('search-match'));
+  if(!query){
+    searchMatchCount.textContent = '';
+    return;
+  }
+  const blocks = getSalespersonBlocks();
+  const matches = [];
+  blocks.forEach(trs=>{
+    const modelCells = trs[1].querySelectorAll('td.data');
+    const stockCells = trs[2].querySelectorAll('td.data');
+    for(let s=0; s<SLOTS; s++){
+      const modelText = modelCells[s] ? modelCells[s].textContent.trim().toLowerCase() : '';
+      const stockText = stockCells[s] ? stockCells[s].textContent.trim().toLowerCase() : '';
+      if(modelText && modelText.includes(query)){ modelCells[s].classList.add('search-match'); matches.push(modelCells[s]); }
+      if(stockText && stockText.includes(query)){ stockCells[s].classList.add('search-match'); matches.push(stockCells[s]); }
+    }
+  });
+  searchMatchCount.textContent = matches.length
+    ? (matches.length + (matches.length === 1 ? ' match' : ' matches'))
+    : 'No matches';
+  if(matches.length) matches[0].scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+}
+vehicleSearchInput.addEventListener('input', runVehicleSearch);
+
+const lastSavedNote = document.getElementById('lastSavedNote');
+
+let savedFileHandle = null;
+
+async function saveBoardToFile(){
+  const docClone = document.documentElement.cloneNode(true);
+  const htmlStr = '<!DOCTYPE html>\n' + docClone.outerHTML;
+
+  // Chrome/Edge support a real "Save As" dialog so you can pick the folder
+  // and filename. Once you've chosen a location, later saves in this same
+  // browser session write straight back to that same file (like a normal
+  // app's Save, not Save As) — reload the page and it'll ask again.
+  if(window.showSaveFilePicker){
+    try{
+      if(!savedFileHandle){
+        savedFileHandle = await window.showSaveFilePicker({
+          suggestedName: 'Sales_Board.html',
+          types: [{ description: 'HTML file', accept: {'text/html': ['.html']} }]
+        });
+      }
+      const writable = await savedFileHandle.createWritable();
+      await writable.write(htmlStr);
+      await writable.close();
+      hasUnsavedChanges = false;
+      lastSavedNote.textContent = 'Last saved ' + new Date().toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'});
+      return;
+    }catch(err){
+      if(err && err.name === 'AbortError') return; // user cancelled the dialog
+      savedFileHandle = null; // something went wrong with that file; fall back below
+    }
+  }
+
+  // Fallback for browsers without the File System Access API (Firefox,
+  // Safari) — downloads straight to the default downloads folder.
+  const blob = new Blob([htmlStr], {type: 'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Sales_Board.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  hasUnsavedChanges = false;
+  lastSavedNote.textContent = 'Last saved ' + new Date().toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'});
+}
+document.getElementById('saveBoardBtn').addEventListener('click', saveBoardToFile);
+
+// Ctrl/Cmd+S always triggers our reliable save instead of the browser's
+// own (inconsistent) save-page dialog.
+window.addEventListener('keydown', (e)=>{
+  const key = e.key.toLowerCase();
+  if((e.ctrlKey || e.metaKey) && key === 's'){
+    e.preventDefault();
+    saveBoardToFile();
+  }
+});
+
+window.addEventListener('beforeunload', (e)=>{
+  if(!hasUnsavedChanges) return;
+  e.preventDefault();
+  e.returnValue = '';
+});
+
+const pwOverlay = document.getElementById('pwOverlay');
+const pwInput = document.getElementById('pwInput');
+const pwError = document.getElementById('pwError');
+const lockBtn = document.getElementById('lockBtn');
+
+function setAllEditable(isEditable){
+  document.querySelectorAll('span.name-text, td.data:not(.year-cell), span.note-text, span.year-text').forEach(el=>{
+    el.contentEditable = isEditable ? 'true' : 'false';
+  });
+  document.querySelectorAll('button.type-toggle, button.slot-delete').forEach(btn=>{
+    btn.disabled = !isEditable;
+  });
+  document.querySelectorAll('input.select-person, input.pending-check').forEach(cb=>{
+    cb.disabled = !isEditable;
+  });
+}
+
+function applyLockedState(){
+  document.body.classList.toggle('is-locked', !unlocked);
+  setAllEditable(unlocked);
+  lockBtn.innerHTML = unlocked ? '&#128275; Lock Sheet' : '&#128274; Unlock to Edit';
+}
+
+function openPwModal(){
+  pwError.textContent = '';
+  pwInput.value = '';
+  pwOverlay.classList.remove('hidden');
+  setTimeout(()=>pwInput.focus(), 50);
+}
+function closePwModal(){ pwOverlay.classList.add('hidden'); }
+
+lockBtn.addEventListener('click', ()=>{
+  if(unlocked){
+    unlocked = false;
+    applyLockedState();
+  } else {
+    openPwModal();
+  }
+});
+
+document.getElementById('pwCancel').addEventListener('click', closePwModal);
+document.getElementById('pwSubmit').addEventListener('click', tryUnlock);
+pwInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryUnlock(); });
+
+function tryUnlock(){
+  if(pwInput.value === BOARD_PASSWORD){
+    unlocked = true;
+    applyLockedState();
+    closePwModal();
+  } else {
+    pwError.textContent = 'Incorrect password. Try again.';
+    pwInput.value = '';
+    pwInput.focus();
+  }
+}
+
+applyLockedState();
+sortBoardByCarsOut();
+updateTotals();
+hasUnsavedChanges = false;
+
+const clearOverlay = document.getElementById('clearOverlay');
+const clearAllBtn = document.getElementById('clearAllBtn');
+const undoToast = document.getElementById('undoToast');
+const undoToastMessage = document.getElementById('undoToastMessage');
+const undoClearBtn = document.getElementById('undoClearBtn');
+let lastBoardSnapshot = null;
+let undoToastTimer = null;
+
+function showUndoToast(message){
+  undoToastMessage.textContent = message;
+  undoToast.classList.remove('hidden');
+  clearTimeout(undoToastTimer);
+  undoToastTimer = setTimeout(()=> undoToast.classList.add('hidden'), 20000);
+}
+
+function openClearModal(){ clearOverlay.classList.remove('hidden'); }
+function closeClearModal(){ clearOverlay.classList.add('hidden'); }
+
+clearAllBtn.addEventListener('click', ()=>{
+  if(!unlocked) return;
+  openClearModal();
+});
+
+document.getElementById('clearCancel').addEventListener('click', closeClearModal);
+
+document.getElementById('clearConfirm').addEventListener('click', ()=>{
+  lastBoardSnapshot = boardBody.innerHTML;
+
+  document.querySelectorAll('td.data').forEach(td => {
+    if(td.classList.contains('year-cell')){
+      const span = td.querySelector('span.year-text');
+      if(span) span.textContent = '';
+    } else {
+      td.textContent = '';
+    }
+    td.style.background = '';
+  });
+  document.querySelectorAll('span.note-text').forEach(span => span.textContent = '');
+  document.querySelectorAll('input.pending-check').forEach(cb => {
+    cb.checked = false;
+    cb.removeAttribute('checked');
+  });
+  document.querySelectorAll('button.type-toggle').forEach(btn => {
+    btn.dataset.carType = '';
+    btn.textContent = '—';
+  });
+  document.querySelectorAll('.swatch').forEach(b => b.classList.remove('selected'));
+  document.querySelector('.swatch.none').classList.add('selected');
+  activeColor = '';
+  sortBoardByCarsOut();
+  updateTotals();
+  markDirty();
+  closeClearModal();
+
+  showUndoToast('Board data cleared.');
+});
+
+undoClearBtn.addEventListener('click', ()=>{
+  if(lastBoardSnapshot === null) return;
+  boardBody.innerHTML = lastBoardSnapshot;
+  lastBoardSnapshot = null;
+  undoToast.classList.add('hidden');
+  clearTimeout(undoToastTimer);
+  sortBoardByCarsOut();
+  updateTotals();
+  markDirty();
+});
+
+const deleteOverlay = document.getElementById('deleteOverlay');
+const deletePersonBtn = document.getElementById('deletePersonBtn');
+const deleteWarningText = document.getElementById('deleteWarningText');
+
+function getCheckedBlocks(){
+  return getSalespersonBlocks().filter(trs => {
+    const cb = trs[0].querySelector('input.select-person');
+    return cb && cb.checked;
+  });
+}
+
+function openDeleteModal(count){
+  deleteWarningText.textContent = count === 1
+    ? 'This will remove the checked salesperson and all of their car data. You\'ll have a short window to undo right after.'
+    : ('This will remove all ' + count + ' checked salespeople and their car data. You\'ll have a short window to undo right after.');
+  deleteOverlay.classList.remove('hidden');
+}
+function closeDeleteModal(){ deleteOverlay.classList.add('hidden'); }
+
+deletePersonBtn.addEventListener('click', ()=>{
+  if(!unlocked) return;
+  const checked = getCheckedBlocks();
+  if(checked.length === 0){
+    alert('Check the box in the top-left corner of a salesperson\'s name first to select them for deletion.');
+    return;
+  }
+  openDeleteModal(checked.length);
+});
+
+document.getElementById('deleteCancel').addEventListener('click', closeDeleteModal);
+
+document.getElementById('deleteConfirm').addEventListener('click', ()=>{
+  lastBoardSnapshot = boardBody.innerHTML;
+
+  const checked = getCheckedBlocks();
+  const count = checked.length;
+  checked.forEach(trs => trs.forEach(tr => tr.remove()));
+  sortBoardByCarsOut();
+  updateTotals();
+  markDirty();
+  closeDeleteModal();
+
+  showUndoToast(count === 1 ? 'Salesperson deleted.' : (count + ' salespeople deleted.'));
+});
+
+const slotDeleteOverlay = document.getElementById('slotDeleteOverlay');
+let pendingSlotDelete = null;
+
+function openSlotDeleteModal(trs, slotIndex){
+  pendingSlotDelete = { trs, slotIndex };
+  slotDeleteOverlay.classList.remove('hidden');
+}
+function closeSlotDeleteModal(){
+  pendingSlotDelete = null;
+  slotDeleteOverlay.classList.add('hidden');
+}
+
+document.getElementById('slotDeleteCancel').addEventListener('click', closeSlotDeleteModal);
+
+document.getElementById('slotDeleteConfirm').addEventListener('click', ()=>{
+  if(!pendingSlotDelete) return;
+  const { trs, slotIndex } = pendingSlotDelete;
+  deleteSlotAndShiftLeft(trs, slotIndex);
+  sortBoardByCarsOut();
+  updateTotals();
+  runVehicleSearch();
+  markDirty();
+  closeSlotDeleteModal();
+});
+</script>
+
+
+</body></html>
