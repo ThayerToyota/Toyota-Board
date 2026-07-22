@@ -587,12 +587,20 @@
         <div class="total-num" id="pendingTotal">5</div>
       </div>
       <div class="total-box">
-        <div class="total-label">New</div>
-        <div class="total-num" id="newTotal">20</div>
+        <div class="total-label">New Sold</div>
+        <div class="total-num" id="newSoldTotal">17</div>
       </div>
       <div class="total-box">
-        <div class="total-label">Used</div>
-        <div class="total-num" id="usedTotal">30</div>
+        <div class="total-label">Used Sold</div>
+        <div class="total-num" id="usedSoldTotal">29</div>
+      </div>
+      <div class="total-box">
+        <div class="total-label">New Pending</div>
+        <div class="total-num" id="newPendingTotal">3</div>
+      </div>
+      <div class="total-box">
+        <div class="total-label">Used Pending</div>
+        <div class="total-num" id="usedPendingTotal">1</div>
       </div>
     </div>
   </div>
@@ -1322,7 +1330,8 @@ function sortBoardByCarsOut(){
 
 function updateTotals(){
   const blocks = getSalespersonBlocks();
-  let sold = 0, pending = 0, newCount = 0, usedCount = 0;
+  let sold = 0, pending = 0;
+  let newSold = 0, usedSold = 0, newPending = 0, usedPending = 0;
 
   blocks.forEach(trs=>{
     const yearCells = trs[0].querySelectorAll('td.data');
@@ -1342,21 +1351,25 @@ function updateTotals(){
       const filled = year.length > 0 && model.length > 0;
       if(!filled) continue;
 
+      // Every filled slot is either pending or sold — nothing else.
       if(isPending){
         pending++;
+        if(carType === 'new') newPending++;
+        else if(carType === 'used') usedPending++;
       } else {
         sold++;
+        if(carType === 'new') newSold++;
+        else if(carType === 'used') usedSold++;
       }
-
-      if(carType === 'new') newCount++;
-      else if(carType === 'used') usedCount++;
     }
   });
 
   document.getElementById('soldTotal').textContent = sold;
   document.getElementById('pendingTotal').textContent = pending;
-  document.getElementById('newTotal').textContent = newCount;
-  document.getElementById('usedTotal').textContent = usedCount;
+  document.getElementById('newSoldTotal').textContent = newSold;
+  document.getElementById('usedSoldTotal').textContent = usedSold;
+  document.getElementById('newPendingTotal').textContent = newPending;
+  document.getElementById('usedPendingTotal').textContent = usedPending;
 }
 
 function addPerson(){
