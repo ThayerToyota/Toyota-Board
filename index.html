@@ -382,6 +382,16 @@
     opacity:0.55;
     cursor:not-allowed;
   }
+  button.type-toggle.needs-type{
+    animation: needsTypeFlash 1.1s ease-in-out infinite;
+  }
+  body.is-locked button.type-toggle.needs-type{
+    animation: none;
+  }
+  @keyframes needsTypeFlash{
+    0%, 100% { background:#f1f2f4; border-color:var(--line); color:var(--muted); }
+    50% { background:#ffcf3f; border-color:#c99400; color:#5c4400; }
+  }
   tr.block-start td{ border-top:2px solid #999; }
   .footer-bar{
     padding:12px 20px 18px;
@@ -583,10 +593,6 @@
         <div class="total-num" id="soldTotal">44</div>
       </div>
       <div class="total-box">
-        <div class="total-label">Pending</div>
-        <div class="total-num" id="pendingTotal">8</div>
-      </div>
-      <div class="total-box">
         <div class="total-label">New Sold</div>
         <div class="total-num" id="newSoldTotal">15</div>
       </div>
@@ -656,7 +662,7 @@
     Pick a highlight color above, then click a box (or click-drag isn't needed — just click each box in the entry) to color-code it.
     Click "No fill" then a box to clear its color.
     <b>Search:</b> use the search box in the toolbar to find a car by stock number or model — matching boxes get a blue outline and the board scrolls to the first match.
-    <b>Sold / Pending:</b> once a car's Year and Model are both filled in, it's counted automatically — a Stock # isn't required. Check the small box next to that car's Note to auto-fill the word "pending" into the note (so you don't have to type it) and move the car to the Pending total — uncheck it to remove the word and move it back to Sold. You can still just type "pending" yourself too — the checkbox stays in sync either way, and any other note text you've added stays put. Clear the Year and Model and the car drops out of both totals.
+    <b>Sold / Pending:</b> once a car's Year and Model are both filled in, it's counted automatically — a Stock # isn't required. Check the small box next to that car's Note to auto-fill the word "pending" into the note (so you don't have to type it) and move the car into the New/Used Pending totals — uncheck it to remove the word and move it back to Sold. You can still just type "pending" yourself too — the checkbox stays in sync either way, and any other note text you've added stays put. Clear the Year and Model and the car drops out of both totals.
     <b>New / Used:</b> click the small tag under a car's Year/Model/Stock to mark it — click cycles blank → NEW → USED → blank, and the New/Used totals in the header update automatically.
     <b>Deleting a salesperson:</b> check the small box in the top-left corner of their name (their row gets a light red tint), then click "Delete Salesperson" at the bottom and confirm.
     <b>Undo:</b> clearing all data or deleting a salesperson both show a brief "Undo" option at the bottom of the screen right after.
@@ -1359,7 +1365,7 @@ function sortBoardByCarsOut(){
 
 function updateTotals(){
   const blocks = getSalespersonBlocks();
-  let sold = 0, pending = 0;
+  let sold = 0;
   let newSold = 0, usedSold = 0, newPending = 0, usedPending = 0;
   let untypedSold = 0, untypedPending = 0;
 
@@ -1379,15 +1385,18 @@ function updateTotals(){
       const carType = typeCells[s] ? (typeCells[s].dataset.carType || '') : '';
 
       const filled = year.length > 0 && model.length > 0;
-      if(!filled) continue;
+      if(!filled){
+        if(typeCells[s]) typeCells[s].classList.remove('needs-type');
+        continue;
+      }
+
+      if(typeCells[s]) typeCells[s].classList.toggle('needs-type', carType === '');
 
       // Every filled slot is either pending or sold — nothing else. Cars
       // with no Type set yet (still showing "—") don't belong to either
-      // the New or Used breakdown, but they still count toward the
-      // overall Sold/Pending total, so we track them separately here
-      // rather than let the breakdown silently fall short of the total.
+      // the New or Used breakdown, so we track them separately here to
+      // power the warning below, rather than let them vanish silently.
       if(isPending){
-        pending++;
         if(carType === 'new') newPending++;
         else if(carType === 'used') usedPending++;
         else untypedPending++;
@@ -1401,7 +1410,6 @@ function updateTotals(){
   });
 
   document.getElementById('soldTotal').textContent = sold;
-  document.getElementById('pendingTotal').textContent = pending;
   document.getElementById('newSoldTotal').textContent = newSold;
   document.getElementById('usedSoldTotal').textContent = usedSold;
   document.getElementById('newPendingTotal').textContent = newPending;
