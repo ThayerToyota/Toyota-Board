@@ -50,6 +50,11 @@
     opacity:0.85;
     margin-top:2px;
   }
+  .titlebar .sub.last-updated{
+    font-size:9.5px;
+    opacity:0.7;
+    margin-top:1px;
+  }
   .month-select-wrap{
     display:flex;
     align-items:center;
@@ -569,6 +574,7 @@
     <div>
       <h1>THAYER TOYOTA — SALES BOARD</h1>
       <div class="sub">Salesperson sales tracker</div>
+      <div class="sub last-updated" id="lastUpdatedNote">Last updated Thu, Jul 23 at 1:52 PM</div>
     </div>
     <div class="month-select-wrap">
       <label for="monthSelect">Month</label>
@@ -730,7 +736,16 @@ const rowLabels = ["Year","Model","Stock","Type","Note"];
 let activeColor = "";
 let unlocked = false;
 let hasUnsavedChanges = false;
-function markDirty(){ hasUnsavedChanges = true; }
+const lastUpdatedNote = document.getElementById('lastUpdatedNote');
+function formatUpdatedStamp(date){
+  const dayStr = date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+  const timeStr = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  return 'Last updated ' + dayStr + ' at ' + timeStr;
+}
+function markDirty(){
+  hasUnsavedChanges = true;
+  if(lastUpdatedNote) lastUpdatedNote.textContent = formatUpdatedStamp(new Date());
+}
 
 const headerRow = document.getElementById('headerRow');
 while(headerRow.children.length > 2){
@@ -1621,6 +1636,14 @@ applyLockedState();
 sortBoardByCarsOut();
 updateTotals();
 hasUnsavedChanges = false;
+
+// If the board has never been edited before (fresh file, or a file
+// saved before this feature existed), the note starts out blank —
+// give it an initial stamp so something always shows, without
+// touching hasUnsavedChanges (opening the file isn't an edit).
+if(lastUpdatedNote && !lastUpdatedNote.textContent.trim()){
+  lastUpdatedNote.textContent = formatUpdatedStamp(new Date());
+}
 
 const clearOverlay = document.getElementById('clearOverlay');
 const clearAllBtn = document.getElementById('clearAllBtn');
